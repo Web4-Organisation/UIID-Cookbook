@@ -1,0 +1,12 @@
+{
+  "name": "uiid-mock-server",
+  "version": "1.0.0",
+  "description": "Local mock server for UIID API v1 testing and developer integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

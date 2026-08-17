@@ -1,0 +1,8 @@
+vendor/
+php/vendor/
+javascript/node_modules/
+node_modules/
+__pycache__/
+*.pyc
+.phpunit.cache/
+.pytest_cache/
