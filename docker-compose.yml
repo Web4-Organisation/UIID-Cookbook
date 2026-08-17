@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mock-api:
+    build: ./mock-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+  test-js:
+    image: node:20-alpine
+    working_dir: /app/javascript
+    volumes:
+      - ./javascript:/app/javascript
+    command: sh -c "npm test"
+    depends_on:
+      - mock-api
+
+  test-python:
+    image: python:3.12-slim
+    working_dir: /app/python
+    volumes:
+      - ./python:/app/python
+    command: sh -c "pip install -r requirements.txt && PYTHONPATH=. python -m pytest tests"
+    depends_on:
+      - mock-api
+
+  test-php:
+    image: php:8.3-cli-alpine
+    working_dir: /app/php
+    volumes:
+      - ./php:/app/php
+    command: sh -c "php -r 'copy(\"https://getcomposer.org/installer\", \"composer-setup.php\");' && php composer-setup.php --install-dir=/usr/local/bin --filename=composer && composer install && ./vendor/bin/phpunit tests"
+    depends_on:
+      - mock-api
+
+  test-go:
+    image: golang:1.22-alpine
+    working_dir: /app/go
+    volumes:
+      - ./go:/app/go
+    command: sh -c "go test -v ."
+    depends_on:
+      - mock-api

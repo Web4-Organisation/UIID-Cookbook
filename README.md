@@ -1,134 +1,170 @@
-# UIID API Cookbook & Developer Guide
+# UIID API v1 Cookbook & Developer Guide
 
-[![UIID Documentation](https://img.shields.io/badge/API_Docs-uiid.linkspreed.com-blue)](https://uiid.linkspreed.com/api-docs)
+[![UIID API Docs](https://img.shields.io/badge/API_Docs-uiid.linkspreed.com-blue)](https://uiid.linkspreed.com/api-docs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![UIID Version](https://img.shields.io/badge/UIID_API-v1.0-green)](#)
+[![Docker Support](https://img.shields.io/badge/Docker-Compose-blue.svg)](#docker--local-testing)
 
-Welcome to the official **UIID (Universal Integrated Identity) API Cookbook**. This repository contains production-ready code samples, SDK wrappers, testable examples, and implementation guides across multiple programming languages (**JavaScript/Node.js**, **Python**, **PHP**, **Go**, and **cURL**).
+Welcome to the official **UIID (Universal Integrated Identity) API Cookbook**. This repository is a production-grade, multi-language developer guide, SDK suite, runnable sample collection, and testing kit for **UIID API v1**.
 
-The full and official API documentation is available at:
+The official and complete API documentation is available at:
 👉 **[https://uiid.linkspreed.com/api-docs](https://uiid.linkspreed.com/api-docs)**
 
 ---
 
-## 🚀 Overview
+## 🚀 Architectural Concepts
 
-**UIID (Universal Integrated Identity)** provides a zero-trust, passwordless identity layer for the modern web built on sovereign identity principles.
+**UIID (Universal Integrated Identity)** provides a zero-trust, passwordless identity layer for the modern web built on sovereign identity principles:
 
-Key architectural anchors:
-1. **Core ID**: The central anchor of a user's digital existence (e.g. `did:uiid:9D1B-3239-5D1D-8399`). Unique and permanent.
-2. **Aliases**: Contextual sub-identities (e.g. `UIID-Alias-80BB...`). Disposable and isolated per application context.
-3. **Immutable Nodes**: Non-editable data anchors stored on identities. Non-modifiable once locked without explicit user deletion requests.
-4. **Shared Buckets**: Real-time collaborative access control between different identities in the same alias context.
+1. **Core ID**: The permanent, cryptographically unique anchor of a user's digital existence (e.g., `did:uiid:9D1B-3239-5D1D-8399`).
+2. **Aliases**: Disposable, contextual sub-identities (e.g., `UIID-Alias-80BB...`) isolated per application context to prevent cross-app tracking.
+3. **Immutable Nodes**: Non-editable data anchors stored directly on identity structures. Locks key-value pairs (`is_immutable: true`), requiring explicit user deletion requests to modify or remove.
+4. **Shared Buckets (v2.6)**: Real-time collaborative access control between different UIID identities within the same alias context (`POST /api/v1/aliases/members`).
+5. **Smart Tags**: Silent, cross-site identity detection using HttpOnly cookie sessions (`GET /api/v1/auth/check`) and temporary ID upgrade flows.
 
 ---
 
 ## 📁 Repository Structure
 
-This repository is structured by language, with each language providing a standard client SDK, integration examples, unit/integration tests, and setup instructions:
+The cookbook is organized cleanly by programming language, featuring client SDK wrappers, step-by-step example suites, framework middleware guides, and unit tests for every language:
 
 ```text
 .
-├── javascript/           # JavaScript / Node.js (CommonJS & ES Modules)
-│   ├── src/              # UIID JavaScript Client
-│   ├── examples/         # Runnable sample scripts (OIDC, Aliases, Webhooks, Smart Tags)
-│   ├── tests/            # Jest test suite with mocked API calls
+├── docker-compose.yml       # Orchestrates local mock API and multi-language test runners
+├── mock-server/             # Express-based local mock API server simulating UIID v1
+│   ├── server.js
+│   ├── package.json
+│   └── Dockerfile
+├── javascript/              # Node.js (CommonJS / ES Modules)
+│   ├── src/index.js         # UIID JavaScript Client SDK
+│   ├── examples/            # 01_auth_oidc.js, 02_app_mgmt.js, 03_core_id.js, etc.
+│   ├── tests/client.test.js # Jest/Node native test runner
 │   └── package.json
-├── python/               # Python 3.8+
-│   ├── uiid/             # UIID Python Client Module
-│   ├── examples/         # Runnable Python scripts
-│   ├── tests/            # pytest unit test suite
+├── python/                  # Python 3.8+
+│   ├── uiid_client.py       # UIID Python Client Module
+│   ├── examples/            # 01_auth_oidc.py, 02_app_mgmt.py, etc.
+│   ├── tests/               # pytest test suite
 │   └── requirements.txt
-├── php/                  # PHP 8.1+
-│   ├── src/              # UIID PHP Service & Client
-│   ├── examples/         # Standalone PHP scripts
-│   ├── tests/            # PHPUnit test suite
+├── php/                     # PHP 8.1+
+│   ├── src/UIIDClient.php   # UIID PHP PSR-4 Client Service
+│   ├── examples/            # Standalone PHP workflow scripts
+│   ├── tests/               # PHPUnit test suite
 │   └── composer.json
-├── go/                   # Go 1.20+
-│   ├── uiid/             # UIID Go Client Package
-│   ├── examples/         # Executable Go programs
-│   ├── uiid_test.go      # Go testing suite
+├── go/                      # Go 1.20+
+│   ├── uiid/client.go       # UIID Go Client Package
+│   ├── examples/            # Executable Go workflow scripts
+│   ├── uiid_test.go         # Go testing suite
 │   └── go.mod
-└── curl/                 # cURL / Shell Scripts
-    ├── examples/         # Complete cURL workflows for all endpoints
-    └── README.md
+└── curl/                    # cURL / Shell Workflows
+    ├── README.md            # Comprehensive cURL API cheatsheet
+    └── examples/            # Executable shell workflow scripts (.sh)
 ```
 
 ---
 
-## 🛠 Features Covered in the Cookbook
+## 🛠 Complete Endpoint Coverage Matrix
 
-| Module | Features & Endpoints Covered |
-| :--- | :--- |
-| **01. Authentication (OIDC)** | `/oauth/authorize`, `/oauth/token` (Authorization Code & Refresh Token flows), `/oauth/userinfo`, `/.well-known/openid-configuration`, `/.well-known/jwks.json` |
-| **02. App Management** | Onboard app (`POST /api/v1/applications`), Revoke app (`DELETE /api/v1/applications/{id}`) |
-| **03. Core ID API** | Generate public UIID (`GET /api/v1/core/uiid/generate`), Trust/KYC Status (`GET /api/v1/core/kyc/status`), Encrypted KV Storage (`POST /api/v1/core/data`), Auth Audit (`GET /api/v1/core/applications`) |
-| **04. Alias Network** | Query Aliases (`GET /api/v1/aliases`), Spawn Alias (`POST /api/v1/aliases/create`), Lifecycle Control (`PUT /api/v1/aliases/{id}/status`), Hierarchical Data Retrieval (`GET /api/v1/aliases/data/{id}`), Overwrite/Patch Data (`POST /PATCH /api/v1/aliases/data`), Request Deletion (`POST /api/v1/aliases/storage/request-deletion`), Key Purge & Permanent Purge |
-| **05. Shared Buckets (v2.6)** | Add Collaborator (`POST /api/v1/aliases/members`), Member Registry (`GET /api/v1/aliases/members/{alias_id}`) |
-| **06. Ecosystem & Trust** | App Marketplace (`GET /api/v1/marketplace/apps`), Badge Registry (`GET /api/v1/badges`), User Verified Credentials (`GET /api/v1/user/badges`) |
-| **07. Auditing** | Core Audit Stream (`GET /api/v1/audit/core`), Alias Action Logs (`GET /api/v1/audit/alias`) |
-| **08. Local Integration** | Smart Tags & Silent Auth (`GET /api/v1/auth/check`), Temporary ID Conversion flow |
-| **09. Webhooks & Security** | Webhook Subscription (`POST /api/v1/webhooks`), HMAC-SHA256 Signature Verification |
+Every single module from the **UIID API v1 Specification** is implemented and testable:
+
+| Module | Endpoint / Feature | Method | Description |
+| :--- | :--- | :--- | :--- |
+| **01. OIDC / Auth** | `/oauth/authorize` | `GET` | Initiate passwordless handshake & generate OIDC redirect URL |
+| | `/oauth/token` | `POST` | Authorization code exchange & refresh token flow |
+| | `/oauth/userinfo` | `GET` | Fetch authenticated identity claims (`sub`, `uiid_core_id`, `email`) |
+| | `/.well-known/openid-configuration` | `GET` | Automated OpenID discovery configuration |
+| | `/.well-known/jwks.json` | `GET` | RSA public keys for ID token signature validation |
+| **02. App Management** | `/api/v1/applications` | `POST` | Onboard new third-party application |
+| | `/api/v1/applications/{id}` | `DELETE` | Revoke client application credentials |
+| **03. Core ID API** | `/api/v1/core/uiid/generate` | `GET` | Public utility generating cryptographically unique UIID strings |
+| | `/api/v1/core/kyc/status` | `GET` | Verification levels (`unverified`, `pending`, `verified`) & trust scores |
+| | `/api/v1/core/data` | `POST` | Store encrypted application KV settings on Core ID |
+| | `/api/v1/core/applications` | `GET` | Audit list of authorized third-party applications |
+| **04. Alias Network** | `/api/v1/aliases` | `GET` | Query user alias registry |
+| | `/api/v1/aliases/create` | `POST` | Spawn new application sub-identity |
+| | `/api/v1/aliases/{id}/status` | `PUT` | Manage lifecycle status (`active`, `paused`, `archived`, `locked`) |
+| | `/api/v1/aliases/data/{id}` | `GET` | Retrieve nested hierarchical JSON storage object |
+| | `/api/v1/aliases/data` | `POST`/`PATCH` | Overwrite or dot-notation partial patch & lock immutable nodes |
+| | `/api/v1/aliases/storage/request-deletion` | `POST` | Trigger provider deletion notification for immutable keys |
+| | `/api/v1/aliases/data` | `DELETE` | Remove specific key-value pair from alias store |
+| | `/api/v1/aliases/{id}` | `DELETE` | Permanently purge identity and all associated nodes |
+| **05. Shared Buckets** | `/api/v1/aliases/members` | `POST` | Grant collaborative access to target UIID (`role: chat_partner`, etc.) |
+| | `/api/v1/aliases/members/{id}` | `GET` | Fetch registry of members in a shared bucket |
+| **06. Ecosystem & Trust** | `/api/v1/marketplace/apps` | `GET` | Discover ecosystem apps for cross-platform integration |
+| | `/api/v1/badges` | `GET` | Ecosystem credential registry |
+| | `/api/v1/user/badges` | `GET` | Verified badges currently owned by the user |
+| **07. Auditing** | `/api/v1/audit/core` | `GET` | Core ID primary transaction history |
+| | `/api/v1/audit/alias` | `GET` | Activity stream for a specific alias context |
+| **08. Smart Tags** | `/api/v1/auth/check` | `GET` | Silent HttpOnly cookie auth detection for smart tags |
+| **09. Webhooks** | `/api/v1/webhooks` | `POST` | Subscribe to identity events & receive HMAC-SHA256 secret |
 
 ---
 
-## 🔑 Quick Start by Language
+## ⚡ Quick Start by Language
 
 ### 🟡 JavaScript / Node.js
 ```bash
 cd javascript
 npm install
-npm test            # Runs the Jest test suite
-node examples/01_auth_flow.js
+npm test                         # Runs Jest unit tests
+node examples/01_auth_oidc.js    # Runs OIDC example workflow
 ```
 
 ### 🐍 Python
 ```bash
 cd python
 pip install -r requirements.txt
-pytest              # Runs the pytest test suite
-python examples/01_auth_flow.py
+PYTHONPATH=. python3 -m pytest tests # Runs pytest suite
+python3 examples/01_auth_oidc.py    # Runs Python example workflow
 ```
 
 ### 🐘 PHP
 ```bash
 cd php
 composer install
-./vendor/bin/phpunit # Runs PHPUnit test suite
-php examples/01_auth_flow.php
+./vendor/bin/phpunit tests      # Runs PHPUnit test suite
+php examples/01_auth_oidc.php   # Runs PHP example workflow
 ```
 
 ### 🐹 Go
 ```bash
 cd go
-go test -v ./...    # Runs Go unit tests
-go run examples/01_auth_flow.go
+go test -v .                     # Runs Go unit tests
+go run examples/01_auth_oidc.go  # Runs Go example workflow
 ```
 
-### 🐚 cURL / Bash
+### 🐚 cURL / Shell
 ```bash
 cd curl
-./examples/01_oidc_workflow.sh
+./examples/01_auth_oidc.sh
 ```
 
 ---
 
-## 🔒 Security & Best Practices
+## 🐳 Docker & Local Testing
 
-1. **HMAC Webhook Verification**: Always verify the `X-UIID-Signature` header using HMAC-SHA256 with your endpoint secret to ensure requests originated from UIID.
-2. **Short-Lived Access Tokens**: UIID access tokens expire in 3600s. Use the refresh token flow (`grant_type=refresh_token`) to extend sessions seamlessly.
-3. **Immutable Data Nodes**: Once `is_immutable: true` is set on a data key, it cannot be modified by standard updates. Releasing or purging immutable data requires user-initiated deletion requests.
-4. **Smart Tag CORS**: When implementing silent auth checks (`/api/v1/auth/check`), ensure your frontend includes `credentials: 'include'`.
+You can spin up a local UIID v1 Mock Server and run test suites across all 4 programming languages simultaneously using Docker Compose:
+
+```bash
+docker-compose up --build
+```
 
 ---
 
-## 🔗 Official Links & Resources
+## 🔒 Security Best Practices
+
+1. **HMAC Webhook Signature Verification**: Every incoming webhook payload should be verified against its `X-UIID-Signature` header using HMAC-SHA256 with your endpoint secret.
+2. **Short-Lived Access Tokens**: UIID bearer tokens expire in 3600 seconds. Use the refresh token flow (`grant_type=refresh_token`) to seamlessly extend sessions.
+3. **Immutable Nodes**: Setting `is_immutable: true` locks node keys. Modifying immutable keys requires user-initiated deletion requests (`/api/v1/aliases/storage/request-deletion`).
+
+---
+
+## 🔗 Documentation & Official Resources
 
 - **Official UIID API Documentation**: [https://uiid.linkspreed.com/api-docs](https://uiid.linkspreed.com/api-docs)
-- **Base API URL**: `https://uiid.linkspreed.com`
+- **Base Endpoint**: `https://uiid.linkspreed.com`
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This repository is licensed under the [MIT License](LICENSE).
